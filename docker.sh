@@ -21,6 +21,11 @@ validate(){
     fi
 }
 
+## Git Insatll 
+
+sudo yum install git 
+validate $? "Git installed"
+
 ## Docker install 
 sudo yum install docker 
 validate $? "docker installed"
