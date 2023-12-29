@@ -22,8 +22,10 @@ install_package(){
              echo "$G $1 installed succesfully.... $N"
         else 
             echo "$R Error installing in $1... $N"
+        fi
     else 
         echo "$G $1 is installed alredy.... $N"
+    fi
 }
 
 for package in "${PACKAGES[@]}"; do 
