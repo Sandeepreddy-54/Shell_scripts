@@ -16,7 +16,7 @@ validate(){
     if [$1 -ne 0]; then 
         echo -e "$2 ... $R Failed $N"
         exit 1
-    else; 
+    else
         echo -e "$2... $G Success $N"
     fi
 }
@@ -27,7 +27,11 @@ validate $? "docker installed"
 
 ## docker demon start 
 sudo systemctl start docker
-validate $? "docker demon start "
+validate $? "docker demon start"
+
+## give persmissions to doker.sock 
+sudo chown root:docker /var/run/docker.sock
+validate $? "chown to docker.sock provide"
 
 ## Add user to docker group
 sudo usermod -aG docker $USER
@@ -36,10 +40,6 @@ validate $? "User added to docker group"
 ## Re-start docker 
 sudo systemctl restart docker
 validate $? "docker restart"
-
-## give persmissions to doker.sock 
-sodo chown root:docker /var/run/docker.sock
-validate $? "chown to docker.sock provide"
 
 ## sudowm 
 exit 
