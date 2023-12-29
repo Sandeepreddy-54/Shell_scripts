@@ -17,7 +17,7 @@ is_package_installed(){
 install_package(){
     if ! is_package_installed "$1"; then 
         echo "$Y Installing $1... $N"
-        sudo apt insatll -y "$1"
+        sudo apt install -y "$1"
         if [ $? -eq 0 ]; then 
              echo "$G $1 installed succesfully.... $N"
         else 
