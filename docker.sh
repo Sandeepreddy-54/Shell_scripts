@@ -5,34 +5,12 @@ G="\e[32m"
 Y="\e[33m"
 N="\e[0m"
 
-
-PACKAGES=("git" "docker") 
-
 LOG=docker-install.log
-
-is_package_installed(){
-    rpm -q "$1" &>> $LOG
-}
-
-install_package(){
-    if ! is_package_installed "$1"; then 
-        echo "$Y Installing $1... $N"
-        sudo yum install -y "$1"
-        if [ $? -eq 0 ]; then 
-             echo "$G $1 installed succesfully.... $N"
-        else 
-            echo "$R Error installing in $1... $N"
-        fi
-    else 
-        echo "$G $1 is installed alredy.... $N"
-    fi
-}
-
-for package in "${PACKAGES[@]}"; do 
-    install_package "$package"
-done 
-
-echo "All packages and dependencies installed successfully."
+USER_ID=$(id -u)
+if [ $USER_ID -ne 0 ]; then
+	echo  -e "$R You are not the root user, you dont have permissions to run this $N"
+	exit 1
+fi
 
 VALIDATE(){
 	if [ $1 -ne 0 ]; then
@@ -41,26 +19,31 @@ VALIDATE(){
 	else
 		echo -e "$2 ... $G SUCCESS $N"
 	fi
+
 }
 
-## docker demon start 
-sudo systemctl start docker &>> $LOG
-validate $? "docker demon start"
+yum update  -y &>>$LOG
+VALIDATE $? "Updating packages"
 
-## give persmissions to doker.sock 
-sudo chown root:docker /var/run/docker.sock &>> $LOG
-validate $? "chown to docker.sock provide"
+amazon-linux-extras install docker -y &>>$LOG
+VALIDATE $? "Installing Docker"
 
-## Add user to docker group
-sudo usermod -aG docker $USER &>> $LOG
-validate $? "User added to docker group"
+service docker start &>>$LOG
+VALIDATE $? "Starting Docker"
 
-## Re-start docker 
-sudo systemctl restart docker &>> $LOG
-validate $? "docker restart"
+systemctl enable docker &>>$LOG
+VALIDATE $? "Enabling Docker"
 
-## sudowm 
-exit 
+usermod -a -G docker ec2-user &>>$LOG
+VALIDATE $? "Added ec2-user to docker group"
 
+yum install git -y &>>$LOG
+VALIDATE $? "Installing GIT"
 
+curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose &>>$LOG
+VALIDATE $? "Downloaded docker-compose"
 
+chmod +x /usr/local/bin/docker-compose
+VALIDATE $? "Moved docker-compose to local bin"
+
+echo  -e "$R You need logout and login to the server $N"
